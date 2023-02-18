@@ -3,6 +3,7 @@
 from util.objects import *
 from util.routines import *
 from util.tools import find_hits
+import random
 
 class Bot(GoslingAgent):
     # This function runs every in-game tick (every time the game updates anything)
@@ -22,48 +23,44 @@ class Bot(GoslingAgent):
             self.set_intent(kickoff())
             print(self.intent)
             return
-        available_large_boosts = [boost for boost in self.boosts if boost.large and boost.active]
-        available_boosts = [boost for boost in self.boosts if boost.active]
+        #Goto closest Large Boost
+        closest_boost = self.get_closest_large_boost()
+        if closest_boost is not None:
+            self.set_intent(goto(closest_boost.location))
 
-        closest_large_boost = None
-        closest_large_distance = 10000
-        closest_distance = 10000
+        if self.is_in_front_of_ball():
+            self.set_intent(goto(self.friend_goal.location, vector=self.get_closest_large_boost().location))
 
-        closest_boost = None
-        for boost in available_large_boosts:
-            distance = (self.me.location - boost.location).magnitude()
-            # print(distance)
-            if closest_large_boost == None or distance < closest_large_distance:
-                closest_large_boost = boost
-        
-        for boost in available_boosts:
-            distance = (self.me.location - boost.location).magnitude()
-            if closest_boost == None or distance < closest_distance:
-                closest_boost = boost
-        
-        if self.me.boost =< 90 and closest_large_boost is not None:
-            self.set_intent(goto(closest_large_boost.location))
-            print("I want boost")
-            return
-        # if we're in front of the ball, retreat
-        if is_in_front_of_ball:
-            self.set_intent(goto(self.friend_goal.location))
-            return
 
         target = {
             'at_opponent_goal': (self.foe_goal.left_post, self.foe_goal.right_post),
             'away_from_our_net': (self.friend_goal.right_post, self.friend_goal.left_post)
         }
         hits = (find_hits(self, target))
+
+        rando = []
+        length = len(rando)
+        for i in 'at_opponent_goal':
+            rando.append(i)
+        choice=random.randint(0, length)
         if len(hits['at_opponent_goal']) > 0:
-            self.set_intent(hits['at_opponent_goal'][0])
-            print(self.me.velocity)
+ 
+            self.set_intent(hits['at_opponent_goal'][choice])
+            print(0)
             return
-            
+
+
+        ronda = []
+        gen = len(ronda)
+        for i in 'away_from_our_net':
+            ronda.append(i)
+        noice=random.randint(0, gen)                                                          
         if len(hits['away_from_our_net']) > 0:
-            self.set_intent(hits['away_from_our_net'][0])
-            print(self.me.velocity)
+
+            self.set_intent(hits['away_from_our_net'][noice])
+            print(1)
             return
+        
         
        
 

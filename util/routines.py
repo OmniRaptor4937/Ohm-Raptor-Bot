@@ -229,7 +229,7 @@ class goto():
 class goto_boost():
     # very similar to goto() but designed for grabbing boost
     # if a target is provided the bot will try to be facing the target as it passes over the boost
-    def __init__(self, boost, target=None, use_boost=True):
+    def __init__(self, boost, target=None, use_boost=False):
         self.boost = boost
         self.target = target
         self.use_boost = use_boost

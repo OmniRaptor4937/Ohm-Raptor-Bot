@@ -41,8 +41,7 @@ class GoslingAgent(BaseAgent):
         field_info = self.get_field_info()
         for i in range(field_info.num_boosts):
             boost = field_info.boost_pads[i]
-            self.boosts.append(boost_object(
-                i, boost.location, boost.is_full_boost))
+            self.boosts.append(boost_object(i, boost.location))
         self.refresh_player_lists(packet)
         self.ball.update(packet)
         self.ready = True
@@ -123,6 +122,26 @@ class GoslingAgent(BaseAgent):
         # send our updated controller back to rlbot
         return self.controller
 
+    def get_closest_large_boost(self):  
+        available_large_boosts = [boost for boost in self.boosts if boost.large and boost.active]
+        available_boosts = [boost for boost in self.boosts if boost.active]
+
+        closest_large_boost = None
+        closest_large_distance = 10000
+
+        for boost in available_large_boosts:
+            distance = (self.me.location - boost.location).magnitude()
+            # print(distance)
+            if closest_large_boost == None or distance < closest_large_distance:
+                closest_large_boost = boost
+                return closest_large_boost
+    def is_in_front_of_ball(self):
+        me_to_goal = (self.me.location - self.foe_goal.location).magnitude()
+        ball_to_goal = (self.ball.location - self.foe_goal.location).magnitude()
+        if me_to_goal < ball_to_goal:
+            return True
+        return False
+
     def run(self):
         # override this with your strategy code
         pass
@@ -201,11 +220,12 @@ class ball_object:
 
 
 class boost_object:
-    def __init__(self, index, location, large):
+    def __init__(self, index, location):
         self.index = index
         self.location = Vector3(location.x, location.y, location.z)
         self.active = True
-        self.large = large
+        # determine boost size by height (only works for standard maps)
+        self.large = self.location.z > 7
 
     def update(self, packet):
         self.active = packet.game_boosts[self.index].is_active
@@ -217,8 +237,8 @@ class goal_object:
         team = 1 if team == 1 else -1
         self.location = Vector3(0, team * 5100, 320)  # center of goal line
         # Posts are closer to x=750, but this allows the bot to be a little more accurate
-        self.left_post = Vector3(team * 850, team * 5100, 320)
-        self.right_post = Vector3(-team * 850, team * 5100, 320)
+        self.left_post = Vector3(team * 800, team * 5100, 320)
+        self.right_post = Vector3(-team * 800, team * 5100, 320)
 
 
 class game_object:
